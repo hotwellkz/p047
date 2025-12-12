@@ -185,6 +185,7 @@ export async function confirmCode(
       }
       
       // Клиент истёк - нужно запросить новый код
+      const phoneCodeHash = integration.meta?.phoneCodeHash as string;
       Logger.warn("confirmCode: Authorization client expired", {
         userId,
         stateId,
@@ -236,7 +237,7 @@ export async function confirmCode(
         hasFirstName: !!(signInResult as any)?.firstName
       });
 
-      user = signInResult as Api.TypeUser;
+      user = signInResult as unknown as Api.TypeUser;
     } catch (error: any) {
       const errorMessage = String(error?.message ?? error?.errorMessage ?? error);
       const errorCode = error?.code;
@@ -287,7 +288,7 @@ export async function confirmCode(
             new Api.auth.CheckPassword({
               password: passwordHash
             })
-          ) as Api.TypeUser;
+          ) as unknown as Api.TypeUser;
         } catch (pwdError: any) {
           const pwdErrorMessage = String(pwdError?.message ?? pwdError);
           if (pwdErrorMessage.includes("PASSWORD_HASH_INVALID")) {

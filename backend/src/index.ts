@@ -44,7 +44,7 @@ import { Logger } from "./utils/logger";
 import { getFirestoreInfo, isFirestoreAvailable } from "./services/firebaseAdmin";
 
 const app = express();
-const port = process.env.PORT || 8080;
+const port = Number(process.env.PORT) || 8080;
 
 // Нормализуем FRONTEND_ORIGIN (убираем завершающий слеш)
 const normalizeOrigin = (origin: string | undefined): string | undefined => {

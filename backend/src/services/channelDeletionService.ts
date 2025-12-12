@@ -99,6 +99,9 @@ export class ChannelDeletionService {
     const MAX_BATCH_OPS = 450; // Оставляем запас от лимита 500
 
     const addToBatch = (ref: admin.firestore.DocumentReference) => {
+      if (!db) {
+        throw new Error("Firestore database not initialized");
+      }
       if (currentBatchOps >= MAX_BATCH_OPS) {
         batches.push(currentBatch);
         currentBatch = db.batch();

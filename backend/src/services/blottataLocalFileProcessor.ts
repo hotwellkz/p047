@@ -295,7 +295,7 @@ async function saveErrorLog(
       const userIdIndex = pathParts.indexOf("users");
       finalUserId = userIdIndex !== -1 && userIdIndex + 1 < pathParts.length 
         ? pathParts[userIdIndex + 1] 
-        : null;
+        : undefined;
 
       if (!finalUserId) {
         Logger.warn("BlottataLocalFileProcessor: Could not extract userId for error log", { channelId });

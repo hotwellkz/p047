@@ -126,9 +126,17 @@ export async function runVideoGenerationForChannel(
 
     const channel = {
       id: channelId,
+      name: channelData.name || "",
+      platform: "YOUTUBE_SHORTS" as const,
+      language: "ru" as const,
+      targetDurationSec: 60,
+      niche: "",
+      audience: "",
+      tone: "",
+      blockedTopics: "",
       generationTransport: channelData.generationTransport || "telegram_global",
       telegramSyntaxPeer: channelData.telegramSyntaxPeer || null
-    } as { id: string; generationTransport?: "telegram_global" | "telegram_user"; telegramSyntaxPeer?: string | null };
+    } as Channel;
 
     Logger.info("runVideoGenerationForChannel: channel validated", {
       channelId,
@@ -249,7 +257,7 @@ export async function runVideoGenerationForChannel(
           userId,
           source,
           jobId,
-          willRunInMinutes: validDelay
+          willRunInMinutes: delayMinutes
         });
       } catch (scheduleError: any) {
         Logger.error("runVideoGenerationForChannel: failed to schedule auto-download", {

@@ -190,3 +190,4 @@ info "Просмотр логов:"
 echo -e "${GREEN}  journalctl -u synology-port-forward.service -f${NC}"
 echo ""
 
+

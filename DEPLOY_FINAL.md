@@ -203,3 +203,4 @@ cat /volume1/shortsai/app/backend/.env | grep BACKEND_URL
 
 Все файлы находятся в репозитории: https://github.com/hotwellkz/p041
 
+

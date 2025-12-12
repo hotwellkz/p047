@@ -274,3 +274,4 @@ echo -e "${GREEN}  pm2 logs shortsai-backend${NC}"
 echo -e "${GREEN}  pm2 restart shortsai-backend${NC}"
 echo ""
 
+

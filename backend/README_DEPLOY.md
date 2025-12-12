@@ -65,3 +65,4 @@ curl http://185.104.248.130:5001/health
 - **Подробная инструкция**: `DEPLOY_PRODUCTION.md`
 - **Корневая инструкция**: `../DEPLOY_NOW.md`
 
+

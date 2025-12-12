@@ -91,3 +91,4 @@ info "Всё готово к деплою. Запустите:"
 echo -e "${GREEN}  ./deploy_synology_auto.sh${NC}"
 echo ""
 
+

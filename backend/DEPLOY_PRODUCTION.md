@@ -342,3 +342,4 @@ pm2 logs shortsai-backend | grep "Media URL generated"
 3. Статус VPN туннеля
 4. Правила iptables на VPS
 
+

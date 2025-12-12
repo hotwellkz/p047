@@ -160,12 +160,12 @@ fi
 
 # 9. Остановка старого процесса (если запущен)
 info "Останавливаю старый процесс (если запущен)..."
-pm2 delete shortsai-backend 2>/dev/null || true
+$PM2_CMD delete shortsai-backend 2>/dev/null || true
 success "Старые процессы остановлены"
 
 # 10. Запуск через pm2
 info "Запускаю backend через pm2..."
-pm2 start dist/index.js \
+$PM2_CMD start dist/index.js \
     --name shortsai-backend \
     --node-args="--max-old-space-size=2048" \
     --log-date-format="YYYY-MM-DD HH:mm:ss Z" \

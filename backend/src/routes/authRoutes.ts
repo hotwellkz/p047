@@ -146,8 +146,8 @@ router.get("/google/drive", authRequired, async (req, res) => {
     const state = generateOAuthState({
       userId,
       returnTo,
-      timestamp: Date.now(),
-      nonce: undefined // будет сгенерирован автоматически
+      timestamp: Date.now()
+      // nonce будет сгенерирован автоматически в generateOAuthState
     });
     
     // Scopes для Google Drive

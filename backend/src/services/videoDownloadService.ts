@@ -702,23 +702,45 @@ export async function downloadAndUploadVideoToDrive(
                 expiryTime: new Date(userTokens.googleDriveTokenExpiry || 0).toISOString()
               });
               
-              const oauth2Client = new google.auth.OAuth2(
-                process.env.GOOGLE_CLIENT_ID,
-                process.env.GOOGLE_CLIENT_SECRET
-              );
-              oauth2Client.setCredentials({ refresh_token: userTokens.googleDriveRefreshToken });
-              
-              const { credentials } = await oauth2Client.refreshAccessToken();
-              accessToken = credentials.access_token!;
-              
-              // Сохраняем обновлённый токен
-              await updateUserAccessToken(
-                userId,
-                accessToken,
-                credentials.expiry_date || Date.now() + 3600000
-              );
-              
-              Logger.info("downloadAndUploadVideoToDrive: legacy OAuth token refreshed", { userId });
+              try {
+                const oauth2Client = new google.auth.OAuth2(
+                  process.env.GOOGLE_CLIENT_ID,
+                  process.env.GOOGLE_CLIENT_SECRET
+                );
+                oauth2Client.setCredentials({ refresh_token: userTokens.googleDriveRefreshToken });
+                
+                const { credentials } = await oauth2Client.refreshAccessToken();
+                accessToken = credentials.access_token!;
+                
+                // Сохраняем обновлённый токен
+                await updateUserAccessToken(
+                  userId,
+                  accessToken,
+                  credentials.expiry_date || Date.now() + 3600000
+                );
+                
+                Logger.info("downloadAndUploadVideoToDrive: legacy OAuth token refreshed", { userId });
+              } catch (refreshError: any) {
+                const errorMessage = String(refreshError?.message || refreshError);
+                Logger.error("downloadAndUploadVideoToDrive: Failed to refresh legacy OAuth token", {
+                  userId,
+                  error: errorMessage,
+                  errorCode: refreshError?.code
+                });
+
+                // Обработка ошибки invalid_grant
+                if (
+                  errorMessage.includes("invalid_grant") ||
+                  refreshError?.code === "invalid_grant" ||
+                  refreshError?.response?.data?.error === "invalid_grant"
+                ) {
+                  throw new Error(
+                    "GOOGLE_DRIVE_REAUTH_REQUIRED: Токен доступа Google Drive недействителен. Пожалуйста, переподключите Google Drive в настройках."
+                  );
+                }
+
+                throw refreshError;
+              }
             }
             
             // Используем OAuth токен для загрузки через старую функцию

@@ -267,3 +267,4 @@ gcloud run services logs read shortsai-backend --region us-central1 --limit 100 
 - ✅ Обратная совместимость с POST callback endpoint
 
 
+

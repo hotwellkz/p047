@@ -102,7 +102,9 @@ router.get("/callback", async (req, res) => {
         requestId,
         userId,
         email: result.email,
-        returnTo
+        returnTo,
+        hasAccessToken: true,
+        hasRefreshToken: true
       });
 
       // Редиректим на фронтенд с успешным статусом
@@ -112,7 +114,8 @@ router.get("/callback", async (req, res) => {
       Logger.info("GET /api/integrations/google-drive/callback: Redirecting to frontend (success)", {
         requestId,
         userId,
-        redirectUrl
+        redirectUrl,
+        finalDestination: successReturnTo
       });
       
       return res.redirect(redirectUrl);
@@ -126,7 +129,15 @@ router.get("/callback", async (req, res) => {
       });
 
       const errorReturnTo = returnTo || "/settings";
-      const redirectUrl = `${frontendOrigin}${errorReturnTo}${errorReturnTo.includes("?") ? "&" : "?"}drive=error`;
+      const redirectUrl = `${frontendOrigin}${errorReturnTo}${errorReturnTo.includes("?") ? "&" : "?"}drive=error&reason=oauth`;
+      
+      Logger.info("GET /api/integrations/google-drive/callback: Redirecting to frontend (error)", {
+        requestId,
+        userId,
+        redirectUrl,
+        finalDestination: errorReturnTo,
+        errorReason: "oauth"
+      });
       
       return res.redirect(redirectUrl);
     }

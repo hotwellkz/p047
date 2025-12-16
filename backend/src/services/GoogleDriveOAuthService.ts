@@ -60,7 +60,8 @@ export async function generateAuthUrl(): Promise<string> {
  */
 export async function handleOAuthCallback(
   userId: string,
-  code: string
+  code: string,
+  requestId?: string
 ): Promise<{ email?: string }> {
   const oauth2Client = createOAuth2Client();
 
@@ -73,6 +74,7 @@ export async function handleOAuthCallback(
     }
 
     Logger.info("Received tokens from Google OAuth", {
+      requestId,
       userId,
       hasAccessToken: !!tokens.access_token,
       hasRefreshToken: !!tokens.refresh_token,
@@ -87,7 +89,7 @@ export async function handleOAuthCallback(
     try {
       const { data } = await oauth2.userinfo.get();
       email = data.email || undefined;
-      Logger.info("Retrieved user email from Google", { userId, email });
+      Logger.info("Retrieved user email from Google", { requestId, userId, email });
     } catch (emailError: any) {
       Logger.warn("Failed to retrieve user email from Google", {
         userId,

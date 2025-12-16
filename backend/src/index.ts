@@ -35,6 +35,7 @@ import cronRoutes from "./routes/cronRoutes";
 import promptRoutes from "./routes/promptRoutes";
 import googleDriveRoutes from "./routes/googleDriveRoutes";
 import googleDriveIntegrationRoutes from "./routes/googleDriveIntegrationRoutes";
+import googleDriveOAuthCallbackRoutes from "./routes/googleDriveOAuthCallbackRoutes";
 import debugRoutes from "./routes/debugRoutes";
 import testFirestoreRoutes from "./routes/testFirestoreRoutes";
 import authRoutes from "./routes/authRoutes";
@@ -141,6 +142,9 @@ app.use("/api/cron", cronRoutes);
 app.use("/api/prompt", promptRoutes);
 app.use("/api/google-drive", googleDriveRoutes);
 app.use("/api/google-drive-integration", googleDriveIntegrationRoutes);
+// OAuth callback route (GET) - должен быть до других маршрутов
+const googleRedirectPath = process.env.GOOGLE_REDIRECT_PATH || "/api/integrations/google-drive/callback";
+app.use(googleRedirectPath, googleDriveOAuthCallbackRoutes);
 app.use("/api/debug", debugRoutes);
 app.use("/internal/debug", debugRoutes); // Альтернативный путь для диагностики
 app.use("/api/test", testFirestoreRoutes);

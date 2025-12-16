@@ -3,6 +3,7 @@ import { google } from "googleapis";
 import { Logger } from "../utils/logger";
 import { saveUserOAuthTokens } from "../repositories/userOAuthTokensRepo";
 import { authRequired } from "../middleware/auth";
+import { generateOAuthState } from "../utils/oauthState";
 
 const router = Router();
 
@@ -87,6 +88,104 @@ router.get("/google", (req, res) => {
       error: "Failed to initialize Google OAuth",
       message: error instanceof Error ? error.message : String(error)
     });
+  }
+});
+
+/**
+ * GET /api/auth/google/drive
+ * Начинает OAuth flow для Google Drive
+ * Требует авторизацию, получает userId из токена
+ * Делает redirect на Google OAuth URL
+ */
+router.get("/google/drive", authRequired, async (req, res) => {
+  const requestId = `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  const frontendOrigin = process.env.FRONTEND_ORIGIN || "https://shortsai.ru";
+  
+  try {
+    const userId = req.user!.uid;
+    const returnTo = (req.query.returnTo as string) || "/settings";
+    
+    Logger.info("GET /api/auth/google/drive: OAuth flow started", {
+      requestId,
+      userId,
+      returnTo,
+      method: req.method,
+      path: req.path,
+      originalUrl: req.originalUrl,
+      userAgent: req.headers["user-agent"]
+    });
+    
+    // Проверяем наличие необходимых env переменных
+    const clientId = process.env.GOOGLE_CLIENT_ID;
+    const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+    // Формируем redirect_uri из env переменных
+    const backendBaseUrl = process.env.BACKEND_BASE_URL || "https://shortsai-backend-905027425668.us-central1.run.app";
+    const redirectPath = process.env.GOOGLE_REDIRECT_PATH || "/api/integrations/google-drive/callback";
+    const redirectUri: string = process.env.GOOGLE_OAUTH_REDIRECT_URL || `${backendBaseUrl}${redirectPath}`;
+    
+    if (!clientId || !clientSecret) {
+      Logger.error("GET /api/auth/google/drive: Missing env variables", {
+        requestId,
+        userId,
+        hasClientId: !!clientId,
+        hasClientSecret: !!clientSecret
+      });
+      
+      const errorUrl = `${frontendOrigin}${returnTo}${returnTo.includes("?") ? "&" : "?"}drive=error&reason=oauth_config`;
+      return res.redirect(errorUrl);
+    }
+    
+    // Создаём OAuth2 клиент для Google Drive
+    const oauth2Client = new google.auth.OAuth2(
+      clientId,
+      clientSecret,
+      redirectUri
+    );
+    
+    // Генерируем подписанный state с userId и returnTo
+    const state = generateOAuthState({
+      userId,
+      returnTo,
+      timestamp: Date.now(),
+      nonce: undefined // будет сгенерирован автоматически
+    });
+    
+    // Scopes для Google Drive
+    const scopes = [
+      "https://www.googleapis.com/auth/drive.file",
+      "https://www.googleapis.com/auth/drive"
+    ];
+    
+    // Генерируем URL для авторизации
+    const authUrl = oauth2Client.generateAuthUrl({
+      access_type: "offline", // Получаем refresh token
+      prompt: "consent", // Принудительно показываем consent screen
+      scope: scopes,
+      state: state
+    });
+    
+    Logger.info("GET /api/auth/google/drive: Google OAuth URL generated", {
+      requestId,
+      userId,
+      returnTo,
+      redirectUri,
+      authUrlLength: authUrl.length,
+      hasState: !!state
+    });
+    
+    // Делаем redirect на Google OAuth
+    return res.redirect(authUrl);
+  } catch (error: any) {
+    Logger.error("GET /api/auth/google/drive: Failed to start OAuth flow", {
+      requestId,
+      userId: req.user?.uid,
+      error: error?.message || String(error),
+      errorStack: error?.stack
+    });
+    
+    const returnTo = (req.query.returnTo as string) || "/settings";
+    const errorUrl = `${frontendOrigin}${returnTo}${returnTo.includes("?") ? "&" : "?"}drive=error&reason=oauth_start`;
+    return res.redirect(errorUrl);
   }
 });
 

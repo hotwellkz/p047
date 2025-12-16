@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { Loader2, CheckCircle2, XCircle, AlertCircle } from "lucide-react";
 import {
   getGoogleDriveStatus,
-  getGoogleDriveAuthUrl,
   disconnectGoogleDrive,
   type GoogleDriveIntegrationStatus
 } from "../api/googleDriveIntegration";
@@ -31,15 +30,12 @@ const GoogleDriveIntegration = () => {
     }
   };
 
-  const handleConnect = async () => {
-    try {
-      setError(null);
-      const { url } = await getGoogleDriveAuthUrl();
-      // Перенаправляем на страницу авторизации Google
-      window.location.href = url;
-    } catch (err: any) {
-      setError(err.message || "Не удалось получить URL авторизации");
-    }
+  const handleConnect = () => {
+    setError(null);
+    // Прямой redirect на backend endpoint, который сделает redirect на Google OAuth
+    const returnTo = window.location.pathname;
+    const backendUrl = import.meta.env.VITE_API_BASE_URL || "https://shortsai-backend-905027425668.us-central1.run.app";
+    window.location.href = `${backendUrl}/api/auth/google/drive?returnTo=${encodeURIComponent(returnTo)}`;
   };
 
   const handleDisconnect = async () => {

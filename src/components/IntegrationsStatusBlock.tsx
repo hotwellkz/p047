@@ -1,7 +1,7 @@
 import { CheckCircle2, XCircle, Loader2, ExternalLink, HelpCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useIntegrationsStatus } from "../hooks/useIntegrationsStatus";
-import { getGoogleDriveAuthUrl } from "../api/googleDriveIntegration";
+// OAuth теперь запускается через прямой redirect, fetch не нужен
 import { SectionHelpButton } from "./aiAssistant/SectionHelpButton";
 import { useState } from "react";
 
@@ -27,22 +27,16 @@ export function IntegrationsStatusBlock({
     }
   };
 
-  const handleConnectGoogleDrive = async () => {
+  const handleConnectGoogleDrive = () => {
     if (onGoogleDriveConnect) {
       onGoogleDriveConnect();
       return;
     }
 
-    try {
-      setConnectingGoogleDrive(true);
-      const { authUrl } = await getGoogleDriveAuthUrl();
-      // Открываем OAuth в новом окне или перенаправляем
-      window.location.href = authUrl;
-    } catch (error: any) {
-      console.error("Failed to connect Google Drive:", error);
-      alert(`Не удалось подключить Google Drive: ${error.message || "Неизвестная ошибка"}`);
-      setConnectingGoogleDrive(false);
-    }
+    // Прямой redirect на backend endpoint, который сделает redirect на Google OAuth
+    const returnTo = "/settings";
+    const backendUrl = import.meta.env.VITE_API_BASE_URL || "https://shortsai-backend-905027425668.us-central1.run.app";
+    window.location.href = `${backendUrl}/api/auth/google/drive?returnTo=${encodeURIComponent(returnTo)}`;
   };
 
   const handleManageInSettings = (integration: "telegram" | "googleDrive") => {

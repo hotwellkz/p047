@@ -1476,18 +1476,11 @@ const ChannelEditPage = () => {
                         </p>
                         <button
                           type="button"
-                          onClick={async () => {
-                            try {
-                              const currentPath = window.location.pathname;
-                              if (currentPath.includes("/channels/") && currentPath.includes("/edit")) {
-                                sessionStorage.setItem("googleDriveReturnTo", currentPath);
-                              }
-                              const { getGoogleDriveAuthUrl } = await import("../../api/googleDriveIntegration");
-                              const { authUrl } = await getGoogleDriveAuthUrl();
-                              window.location.href = authUrl;
-                            } catch (error: any) {
-                              showError(`Не удалось подключить Google Drive: ${error.message || "Неизвестная ошибка"}`, 5000);
-                            }
+                          onClick={() => {
+                            // Прямой redirect на backend endpoint, который сделает redirect на Google OAuth
+                            const currentPath = window.location.pathname;
+                            const backendUrl = import.meta.env.VITE_API_BASE_URL || "https://shortsai-backend-905027425668.us-central1.run.app";
+                            window.location.href = `${backendUrl}/api/auth/google/drive?returnTo=${encodeURIComponent(currentPath)}`;
                           }}
                           className="mt-2 rounded-lg bg-amber-500/20 px-3 py-1.5 text-xs font-medium text-amber-300 transition hover:bg-amber-500/30"
                         >

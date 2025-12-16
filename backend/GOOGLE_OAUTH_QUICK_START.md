@@ -64,3 +64,4 @@ gcloud run services logs read shortsai-backend --region us-central1 --limit 50 |
 
 См. `backend/GOOGLE_OAUTH_FLOW_FIX.md` для подробной информации.
 
+

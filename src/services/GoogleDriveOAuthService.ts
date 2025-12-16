@@ -9,10 +9,15 @@ import {
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-const GOOGLE_OAUTH_REDIRECT_URL = process.env.GOOGLE_OAUTH_REDIRECT_URL;
+// Используем GOOGLE_DRIVE_REDIRECT_URI (должен быть frontend URL: https://shortsai.ru/google-drive/callback)
+const GOOGLE_DRIVE_REDIRECT_URI = process.env.GOOGLE_DRIVE_REDIRECT_URI || process.env.GOOGLE_OAUTH_REDIRECT_URL;
 
-if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET || !GOOGLE_OAUTH_REDIRECT_URL) {
-  Logger.warn("Google OAuth credentials not fully configured. Some features may not work.");
+if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET || !GOOGLE_DRIVE_REDIRECT_URI) {
+  Logger.warn("Google OAuth credentials not fully configured. Some features may not work.", {
+    hasClientId: !!GOOGLE_CLIENT_ID,
+    hasClientSecret: !!GOOGLE_CLIENT_SECRET,
+    hasRedirectUri: !!GOOGLE_DRIVE_REDIRECT_URI
+  });
 }
 
 // Версия scopes для отслеживания миграций
@@ -28,14 +33,14 @@ const scopes = [
  * Создаёт OAuth2 клиент для Google
  */
 function createOAuth2Client() {
-  if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET || !GOOGLE_OAUTH_REDIRECT_URL) {
+  if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET || !GOOGLE_DRIVE_REDIRECT_URI) {
     throw new Error("Google OAuth credentials not configured");
   }
 
   return new google.auth.OAuth2(
     GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET,
-    GOOGLE_OAUTH_REDIRECT_URL
+    GOOGLE_DRIVE_REDIRECT_URI
   );
 }
 
@@ -51,7 +56,13 @@ export async function generateAuthUrl(): Promise<string> {
     scope: scopes
   });
 
-  Logger.info("Generated Google OAuth auth URL");
+  // Логируем параметры OAuth (без секретов)
+  Logger.info("Generated Google OAuth auth URL", {
+    clientId: GOOGLE_CLIENT_ID ? GOOGLE_CLIENT_ID.substring(0, 20) + "..." : "not set",
+    redirectUri: GOOGLE_DRIVE_REDIRECT_URI,
+    scopes
+  });
+  
   return url;
 }
 

@@ -76,7 +76,8 @@ router.get("/oauth/url", authRequired, async (req, res) => {
     // Проверяем наличие необходимых env переменных
     const clientId = process.env.GOOGLE_CLIENT_ID;
     const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-    const redirectUri = process.env.GOOGLE_OAUTH_REDIRECT_URL;
+    // Используем GOOGLE_DRIVE_REDIRECT_URI (должен быть frontend URL: https://shortsai.ru/google-drive/callback)
+    const redirectUri = process.env.GOOGLE_DRIVE_REDIRECT_URI || process.env.GOOGLE_OAUTH_REDIRECT_URL;
     
     if (!clientId || !clientSecret || !redirectUri) {
       Logger.error("GET /api/google-drive-integration/oauth/url: Missing env variables", {

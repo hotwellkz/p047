@@ -131,3 +131,4 @@ gcloud run services logs read shortsai-backend --region us-central1 --limit 50 |
    - Используйте Secret Manager для хранения секретов
    - Cookie автоматически истекает через 7 дней
 
+

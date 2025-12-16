@@ -270,10 +270,8 @@ router.get("/google/drive", requireSession, async (req, res) => {
     // Проверяем наличие необходимых env переменных
     const clientId = process.env.GOOGLE_CLIENT_ID;
     const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-    // Формируем redirect_uri из env переменных
-    const backendBaseUrl = process.env.BACKEND_BASE_URL || "https://shortsai-backend-905027425668.us-central1.run.app";
-    const redirectPath = process.env.GOOGLE_REDIRECT_PATH || "/api/integrations/google-drive/callback";
-    const redirectUri: string = process.env.GOOGLE_OAUTH_REDIRECT_URL || `${backendBaseUrl}${redirectPath}`;
+    // Используем GOOGLE_DRIVE_REDIRECT_URI (должен быть frontend URL: https://shortsai.ru/google-drive/callback)
+    const redirectUri: string = process.env.GOOGLE_DRIVE_REDIRECT_URI || process.env.GOOGLE_OAUTH_REDIRECT_URL || "https://shortsai.ru/google-drive/callback";
     
     if (!clientId || !clientSecret) {
       Logger.error("GET /api/auth/google/drive: Missing env variables", {
@@ -281,6 +279,17 @@ router.get("/google/drive", requireSession, async (req, res) => {
         userId,
         hasClientId: !!clientId,
         hasClientSecret: !!clientSecret
+      });
+      
+      const errorUrl = `${frontendOrigin}${returnTo}${returnTo.includes("?") ? "&" : "?"}drive=error&reason=oauth_config`;
+      return res.redirect(errorUrl);
+    }
+    
+    if (!redirectUri) {
+      Logger.error("GET /api/auth/google/drive: Missing redirect_uri", {
+        requestId,
+        userId,
+        hasRedirectUri: !!redirectUri
       });
       
       const errorUrl = `${frontendOrigin}${returnTo}${returnTo.includes("?") ? "&" : "?"}drive=error&reason=oauth_config`;
@@ -316,11 +325,14 @@ router.get("/google/drive", requireSession, async (req, res) => {
       state: state
     });
     
+    // Логируем параметры OAuth (без секретов)
     Logger.info("GET /api/auth/google/drive: Google OAuth URL generated", {
       requestId,
       userId,
       returnTo,
+      clientId: clientId.substring(0, 20) + "...", // Первые 20 символов для идентификации
       redirectUri,
+      scopes,
       authUrlLength: authUrl.length,
       hasState: !!state
     });

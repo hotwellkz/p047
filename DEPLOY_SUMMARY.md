@@ -139,3 +139,4 @@ gcloud run services update shortsai-backend --region us-central1 --update-env-va
 
 **Следующий шаг:** Проверьте работу OAuth flow на фронтенде!
 
+

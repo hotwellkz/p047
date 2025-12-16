@@ -392,10 +392,12 @@ const AIAutoGenerateModal = ({
       // Обработка ошибки требования переавторизации
       if (
         errorType === "GOOGLE_DRIVE_REAUTH_REQUIRED" ||
-        errorMessage?.includes("GOOGLE_DRIVE_REAUTH_REQUIRED")
+        errorMessage?.includes("GOOGLE_DRIVE_REAUTH_REQUIRED") ||
+        errorMessage?.includes("invalid_grant") ||
+        errorCode === "invalid_grant"
       ) {
         setDriveMessage(
-          "🔴 Необходимо заново подключить Google Drive для обновления прав доступа. Перейдите в настройки аккаунта и переподключите Google Drive."
+          "🔴 Токен доступа Google Drive недействителен. Пожалуйста, переподключите Google Drive в настройках аккаунта."
         );
         setDriveStatus("error");
         return;
